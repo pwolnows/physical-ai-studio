@@ -132,6 +132,13 @@ class Pi05Config(Config):
     snapflow_lambda: float = 1.0
     snapflow_num_inference_steps: int = 1
 
+    # Adaptive RMS norm conditioning (adaRMSNorm / adaRMS)
+    # When True the gemma_expert layernorms are conditioned on a cond vector
+    # of dimension adarms_cond_dim.  Automatically detected from checkpoint
+    # keys during pretrained loading when not present in config.json.
+    use_adarms: bool = False
+    adarms_cond_dim: int | None = None
+
     def __post_init__(self) -> None:
         """Validate configuration parameters after initialization.
 
@@ -160,4 +167,8 @@ class Pi05Config(Config):
 
         if self.snapflow_num_inference_steps < 1:
             msg = f"snapflow_num_inference_steps must be >= 1, got {self.snapflow_num_inference_steps}"
+            raise ValueError(msg)
+
+        if self.use_adarms and self.adarms_cond_dim is None:
+            msg = "adarms_cond_dim must be set when use_adarms is True"
             raise ValueError(msg)
